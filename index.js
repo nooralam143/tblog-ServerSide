@@ -33,6 +33,7 @@ async function run() {
     // create database & collection
     const blogPostCollection = client.db('tblog').collection('blogPost');
     const wishlistCollection = client.db('tblog').collection('wishlist');
+    const commentCollection = client.db('tblog').collection('comment');
 
 
 
@@ -122,7 +123,44 @@ app.get('/wishlist', async (req, res) => {
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
     })
+    //read comment 
+    app.get('/wishlist', async (req, res) => {
+      const userEmail = req.query.userEmail;
+      const cursor = wishlistCollection.find({ userEmail });
+      const myWishlist = await cursor.toArray();
+      res.send(myWishlist);
+    })
 
+    // user post comment Api start
+    app.post('/comment', async (req, res) => {
+      const newComment = req.body;
+      console.log(newComment);
+      const result = await commentCollection.insertOne(newComment);
+      res.send(result);
+    })
+//user comment read
+    app.get('/comment', async (req, res) => {
+      const cursor = commentCollection.find();
+      const comment = await cursor.toArray();
+      res.send(comment);
+    })
+
+    //comment read by id
+    app.get('/comment/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await commentCollection.findOne(query);
+      res.send(result);
+    })
+//delete comment bu id
+    app.delete('/comment/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log('please delete data', id);
+      const query = { _id: new ObjectId(id) }
+      const result = await commentCollection.deleteOne(query);
+      res.send(result);
+    })
+//comment api end
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -131,7 +169,7 @@ app.get('/wishlist', async (req, res) => {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
-}
+} 
 run().catch(console.dir);
 
 
