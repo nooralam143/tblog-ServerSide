@@ -160,7 +160,7 @@ app.get('/wishlist', async (req, res) => {
       const result = await commentCollection.deleteOne(query);
       res.send(result);
     })
-//comment api end
+//comment is api end
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
