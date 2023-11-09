@@ -34,6 +34,7 @@ async function run() {
     const blogPostCollection = client.db('tblog').collection('blogPost');
     const wishlistCollection = client.db('tblog').collection('wishlist');
     const commentCollection = client.db('tblog').collection('comment');
+    const newsletterCollection = client.db('tblog').collection('newsletter');
 
 
 
@@ -61,7 +62,7 @@ async function run() {
     })
 
     // update single blogpost data
-    app.patch('/post/:id', async (req, res) => {
+    app.put('/post/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
       const options = { upsert: true };
@@ -69,13 +70,12 @@ async function run() {
       console.log(id, post);
       const updatePost = {
         $set: {
-          // imageUrl: product.imageUrl,
-          // name: product.name,
-          // brand: product.brand,
-          // type: product.type,
-          // price: product.price,
-          // description: product.description,
-          // rating: product.rating,
+          postTitle: post.postTitle,
+          postImage: post.postImage,
+          postCategory: post.postCategory,
+          PostTag: post.PostTag,
+          SortDescription: post.SortDescription,
+          LongDescription: post.LongDescription,
         }
       }
       const result = await blogPostCollection.updateOne(filter, updatePost, options);
@@ -92,75 +92,78 @@ async function run() {
     })
     // blogpost Api CRUD methods END
 
-// wishlist api start
-//read all wishlist data in database
-app.get('/wishlist', async (req, res) => {
-  const cursor = wishlistCollection.find();
-  const wishlist = await cursor.toArray();
-  res.send(wishlist);
-})
+    // Wishlist API routes
+    app.get('/wishlist', async (req, res) => {
+      const cursor = wishlistCollection.find();
+      const wishlist = await cursor.toArray();
+      res.send(wishlist);
+    });
 
-    // Post wishlist data in database
+    app.get('/wishlist/user', async (req, res) => {
+      const userEmail = req.query.userEmail;
+      const cursor = wishlistCollection.find({ userEmail });
+      const myWishlist = await cursor.toArray();
+      res.send(myWishlist);
+    });
+
     app.post('/wishlist', async (req, res) => {
       const newWishlist = req.body;
       console.log(newWishlist);
       const result = await wishlistCollection.insertOne(newWishlist);
       res.send(result);
-    })
+    });
 
-    app.get('/wishlist', async (req, res) => {
-      const userEmail = req.query.userEmail;
-      const cursor = wishlistCollection.find({ userEmail });
-      const myWishlist = await cursor.toArray();
-      res.send(myWishlist);
-    })
-
-// Delete wishlist data from database
     app.delete('/wishlist/:id', async (req, res) => {
       const id = req.params.id;
       console.log('please delete data', id);
       const query = { _id: new ObjectId(id) }
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
-    })
-    //read comment 
-    app.get('/wishlist', async (req, res) => {
-      const userEmail = req.query.userEmail;
-      const cursor = wishlistCollection.find({ userEmail });
-      const myWishlist = await cursor.toArray();
-      res.send(myWishlist);
-    })
+    });
 
-    // user post comment Api start
-    app.post('/comment', async (req, res) => {
-      const newComment = req.body;
-      console.log(newComment);
-      const result = await commentCollection.insertOne(newComment);
-      res.send(result);
-    })
-//user comment read
+    // Comment API routes
     app.get('/comment', async (req, res) => {
       const cursor = commentCollection.find();
       const comment = await cursor.toArray();
       res.send(comment);
-    })
+    });
 
-    //comment read by id
     app.get('/comment/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await commentCollection.findOne(query);
       res.send(result);
-    })
-//delete comment bu id
+    });
+
+    app.post('/comment', async (req, res) => {
+      const newComment = req.body;
+      console.log(newComment);
+      const result = await commentCollection.insertOne(newComment);
+      res.send(result);
+    });
+
     app.delete('/comment/:id', async (req, res) => {
       const id = req.params.id;
       console.log('please delete data', id);
       const query = { _id: new ObjectId(id) }
       const result = await commentCollection.deleteOne(query);
       res.send(result);
+    });
+    //comment api end
+    // newslater Api routes
+    app.post('/newsletter', async (req, res) => {
+      const newNewsletter = req.body;
+      console.log(newNewsletter);
+      const result = await newsletterCollection.insertOne(newNewsletter);
+      res.send(result);
     })
-//comment is api end
+
+    app.get('/newsletter', async (req, res) => {
+      const cursor = newsletterCollection.find();
+      const newsletter = await cursor.toArray();
+      res.send(newsletter);
+    })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -169,7 +172,7 @@ app.get('/wishlist', async (req, res) => {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
-} 
+}
 run().catch(console.dir);
 
 
